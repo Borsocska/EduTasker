@@ -1,20 +1,16 @@
-## Csapat és feladat manager
+Karbantartói checklist
 Szőnyi Bence
 Rozmán Balázs
-# Mire jó ?
+Mire jó ?
 Alap terv:
-Minden iskolában elengedhetetlen hogy valami projektet osszonanak ki, amit aztán illően mindenki máshogy vezet, vagy sehogy nem vezet, ha meg van vezetve, az egyenge. Ez erre kívánna megoldást
+Iskolákban sok minden megrongálódhat, elromolhat, vagy akármi történhet, esetleg felújításra szorul. Ebbe a programban ezeket lehet majd vezetni és kijelölni hogy mi van meg, mi vár még, és ki kapja a feladatot
 Amit kínálni szeretnénk terv szerint: 
-Tanári, tanulói profil regisztrálás
+Tanári, illetve karbantartói profilok
 Alap funkciója az oldalnak
 Megkötések profilonként
-# Specifikációk:
-Az oldal alap váza: 
-Az oldalra mindenképpen be kell jelentkezni, csak nem mindegy milyen profillal, nézzük a tanárit.
-Tanári profil:
-A tanári profilnak az oldalon van lehetősége egy új projektet létrehozni, vagy törölni, diákokat hozzáadni kiválasztással, feladatokat köztük szét osztani,, határidőt szabni.
-	Tanulói profil:
-		Ez egy amolyan olvasó nézet lenne, meg lehet nézni melyik csapatba vagy, mennyi időd van, mit is kellene csinálnod
-Gondoljunk olyanra mint mondjuk a cisco és github felülete, csak a Ciscon időt láttunk cvsak és hogy ki van kész, míg a github elég nyers váz, és nem tartalmaz mindenkit az osztályban
-Az adatbázisban tároljuk az osztályt, esetleg osztályokat, amit ki kell választani, hogy melyikkel dolgozunk
-Majd felkerül a projekt, és a benne lévő csapatok, munkáikkal.
+Specifikációk:
+Az oldal alap ötlete tehát a következő. A tanárok felírják a problémát, mi történt, hol, mit kéne megjavitani. Egyszerű. A karbantartók ezután elvégzik, megjelölik. A kettő közt más hozzáférések, és szerepkörök vannak. 
+
+Az adatbázisban a táblák közt mindenképp lesz a bejelentkezéshez szükséges adatok. És egy tanárok, karbantartók, illetve egy kész és sürgős adat sem árt, ezek még evaluálva lesznek
+A “kész” táblába igen vagy nem kerül, sose üres, és nem törlődnek a felvitt adatok, vissza lehessen őket nézni, bármi okból, lehessen tudni hogy ki végezte a munkát esetleg.
+Sürgős pedig (csak ötlet gyanánt ha ki tudjuk vitelezni) hogyha igen, akkor csak azok közül lehessen először kiadni feladatot, ne az olyanokra ami amúgy ráér
