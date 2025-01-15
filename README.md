@@ -1,4 +1,4 @@
-Karbantartói checklist
+Karbantartói checklist <br>
 Szőnyi Bence
 Rozmán Balázs <br>
 Mire jó ? <br>
