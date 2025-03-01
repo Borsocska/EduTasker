@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduTasker - Kanban</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="script.js"></script>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            background-image: url('https://www.transparenttextures.com/patterns/dark-mosaic.png');
+            color: #ffffff;
+            display: flex;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 250px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .sidebar h2 {
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        .nav-button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .nav-button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Adjust Kanban layout */
+        .main-content {
+            margin-left: 270px; /* Pushes the board to the right */
+            flex-grow: 1;
+        }
+
+        .kanban-board {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+                @keyframes buttonClick {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* Floating Add Task Button */
+        .floating-add-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 30px;
+            text-align: center;
+            line-height: 60px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .floating-add-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* Apply animation when clicked */
+        .floating-add-btn:active {
+            animation: buttonClick 0.2s ease;
+        }
+            .sidebar a {
+        text-decoration: none; /* Remove underline */
+        width: 100%;
+        padding: 10px;
+        margin: 5px 0;
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        text-align: center;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: 0.3s;
+        display: block; /* Ensures button-like behavior */
+    }
+
+    .sidebar a:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+
+
+
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>EduTasker</h2>
+        <a href="index.html" class="nav-button">Home</a>
+        <a href="members.html" class="nav-button">Members</a>
+        <a href="calendar.html" class="nav-button">Calendar</a>
+        <a href="inbox.html" class="nav-button">Inbox</a>
+    </div>
+    
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container py-5">
+            <div class="kanban-board row">
+                <div class="column col-md-4" id="todo">
+                    <h2 class="text-center bg-primary text-white p-2 rounded">To Do</h2>
+                    <div class="task-list p-3 border rounded bg-white text-dark" data-status="todo"></div>
+                    <button class="floating-add-btn" onclick="addTask()">+</button>
+
+                </div>
+                <div class="column col-md-4" id="in-progress">
+                    <h2 class="text-center bg-warning text-dark p-2 rounded">In Progress</h2>
+                    <div class="task-list p-3 border rounded bg-white text-dark" data-status="in-progress"></div>
+                </div>
+                <div class="column col-md-4" id="completed">
+                    <h2 class="text-center bg-success text-white p-2 rounded">Completed</h2>
+                    <div class="task-list p-3 border rounded bg-white text-dark" data-status="completed"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.0.1/dist/socket.io.min.js"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>
