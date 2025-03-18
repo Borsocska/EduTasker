@@ -89,6 +89,28 @@ app.post("/api/boards", authenticate, async (req, res) => {
   }
 });
 
+// Rename board
+app.put("/api/boards/:id", authenticate, async (req, res) => {
+  const { name } = req.body;
+  const { id } = req.params;
+
+  try {
+    const [result] = await db.query(
+      "UPDATE boards SET name = ? WHERE id = ? AND user_id = ?",
+      [name, id, req.userId]
+    );
+
+    if (result.affectedRows > 0) {
+      res.status(200).json({ id, name }); // Return updated board
+    } else {
+      res.status(404).json({ error: "Board not found or unauthorized" });
+    }
+  } catch (err) {
+    console.error("Error renaming board:", err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 
 // Delete board
 app.delete("/api/boards/:id", async (req, res) => {
@@ -112,12 +134,16 @@ app.delete("/api/boards/:id", async (req, res) => {
 app.get("/api/board/:boardId/tasks", authenticate, async (req, res) => {
   try {
     const { boardId } = req.params;
-    const [rows] = await db.query("SELECT * FROM tasks WHERE board_id = ?", [boardId]);
+    const [rows] = await db.query(
+      "SELECT * FROM tasks WHERE board_id = ? AND EXISTS (SELECT 1 FROM boards WHERE id = ? AND user_id = ?)",
+      [boardId, boardId, req.userId]
+    );
     res.json(rows);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 app.post("/api/board/:boardId/tasks", authenticate, async (req, res) => {
   try {

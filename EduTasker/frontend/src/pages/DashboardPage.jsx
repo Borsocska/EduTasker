@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function DashboardPage() {
   const [boards, setBoards] = useState([]);
-  const [newBoardName, setNewBoardName] = useState("");
+  const [newBoard, setNewBoard] = useState("");
   const [editingBoard, setEditingBoard] = useState(null);
-  const [editName, setEditName] = useState("");
+  const [updatedBoardName, setUpdatedBoardName] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,121 +26,99 @@ function DashboardPage() {
   };
 
   const createBoard = async () => {
-    if (!newBoardName.trim()) return;
+    if (!newBoard.trim()) return;
     try {
-      const response = await axios.post(
+      await axios.post(
         "http://localhost:5000/api/boards",
-        { name: newBoardName },
+        { name: newBoard },
         { headers: { Authorization: localStorage.getItem("token") } }
       );
-  
-      setBoards([...boards, response.data]); // Now includes { id, name }
-      setNewBoardName("");
+      setNewBoard("");
+      fetchBoards();
     } catch (error) {
       console.error("Error creating board", error);
-    }
-  };
-  
-
-  const deleteBoard = async (id) => {
-    try {
-      await axios.delete(`http://localhost:5000/api/boards/${id}`, {
-        headers: { Authorization: localStorage.getItem("token") },
-      });
-      setBoards(boards.filter((board) => board.id !== id)); // Remove from UI instantly
-    } catch (error) {
-      console.error("Error deleting board", error);
     }
   };
 
   const startEditing = (board) => {
     setEditingBoard(board.id);
-    setEditName(board.name);
+    setUpdatedBoardName(board.name);
   };
 
-  const renameBoard = async (id) => {
-    if (!editName.trim()) return;
+  const updateBoard = async (boardId) => {
+    if (!updatedBoardName.trim()) return;
     try {
       await axios.put(
-        `http://localhost:5000/api/boards/${id}`,
-        { name: editName },
+        `http://localhost:5000/api/boards/${boardId}`,
+        { name: updatedBoardName },
         { headers: { Authorization: localStorage.getItem("token") } }
       );
-      setBoards(
-        boards.map((board) =>
-          board.id === id ? { ...board, name: editName } : board
-        )
-      ); // Instantly update UI
       setEditingBoard(null);
+      fetchBoards();
     } catch (error) {
-      console.error("Error renaming board", error);
+      console.error("Error updating board", error);
+    }
+  };
+
+  const deleteBoard = async (boardId) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/boards/${boardId}`, {
+        headers: { Authorization: localStorage.getItem("token") },
+      });
+      fetchBoards();
+    } catch (error) {
+      console.error("Error deleting board", error);
     }
   };
 
   return (
     <div className="container mt-4">
-      <h2 className="text-center">Dashboard</h2>
-      <div className="row">
-        <div className="col-12">
-          <div className="input-group mb-3">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="New board name"
-              value={newBoardName}
-              onChange={(e) => setNewBoardName(e.target.value)}
-            />
-            <button className="btn btn-primary" onClick={createBoard}>
-              Create Board
-            </button>
-          </div>
-        </div>
+      <h2>Dashboard</h2>
+
+      <div className="input-group mb-3">
+        <input
+          type="text"
+          className="form-control"
+          placeholder="New board name"
+          value={newBoard}
+          onChange={(e) => setNewBoard(e.target.value)}
+        />
+        <button className="btn btn-primary" onClick={createBoard}>
+          Create Board
+        </button>
       </div>
 
-      <div className="row">
+      <div className="list-group">
         {boards.map((board) => (
-          <div key={board.id} className="col-12 mb-3">
-            <div className="card">
-              <div className="card-body">
-                {editingBoard === board.id ? (
-                  <>
-                    <input
-                      type="text"
-                      className="form-control mb-2"
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                    />
-                    <button
-                      className="btn btn-success w-100 mb-2"
-                      onClick={() => renameBoard(board.id)}
-                    >
-                      Save
-                    </button>
-                    <button
-                      className="btn btn-secondary w-100"
-                      onClick={() => setEditingBoard(null)}
-                    >
-                      Cancel
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <h5>{board.name}</h5>
-                    <button
-                      className="btn btn-warning w-100 mb-2"
-                      onClick={() => startEditing(board)}
-                    >
-                      Rename
-                    </button>
-                    <button
-                      className="btn btn-danger w-100"
-                      onClick={() => deleteBoard(board.id)}
-                    >
-                      Delete
-                    </button>
-                  </>
-                )}
-              </div>
+          <div key={board.id} className="list-group-item d-flex justify-content-between align-items-center">
+            <Link to={`/board/${board.id}`} className="text-decoration-none">
+              <h5 className="mb-0">{board.name}</h5>
+            </Link>
+            <div>
+              {editingBoard === board.id ? (
+                <>
+                  <input
+                    type="text"
+                    value={updatedBoardName}
+                    onChange={(e) => setUpdatedBoardName(e.target.value)}
+                  />
+                  <button className="btn btn-success ms-2" onClick={() => updateBoard(board.id)}>
+                    Save
+                  </button>
+                  <button className="btn btn-secondary ms-2" onClick={() => setEditingBoard(null)}>
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className="btn btn-warning ms-2" onClick={() => startEditing(board)}>
+                    Rename
+                  </button>
+                  <button className="btn btn-danger ms-2" onClick={() => deleteBoard(board.id)}>
+                    Delete
+                  </button>
+                </>
+              )}
             </div>
           </div>
         ))}
