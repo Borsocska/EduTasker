@@ -16,10 +16,10 @@ CREATE TABLE boards (
 );
 
 CREATE TABLE tasks (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    status ENUM('To-Do', 'In Progress', 'Complete') DEFAULT 'To-Do',
-    board_id INT,
-    FOREIGN KEY (board_id) REFERENCES boards(id)
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  sort_order INT NOT NULL,       
+  status ENUM('To-Do', 'In Progress', 'Complete') DEFAULT 'To-Do',
+  board_id INT,
+  FOREIGN KEY (board_id) REFERENCES boards(id)
 );
