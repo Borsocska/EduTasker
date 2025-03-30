@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
-import "bootstrap/dist/css/bootstrap.min.css";
+import "./KanbanPage.css"; // Using the same CSS file for consistency
 
 function DashboardPage() {
   const [boards, setBoards] = useState([]);
@@ -10,6 +10,25 @@ function DashboardPage() {
   const [updatedBoardName, setUpdatedBoardName] = useState("");
   const navigate = useNavigate();
 
+  // Decode current user id and username from the stored JWT token
+  const token = localStorage.getItem("token");
+  let currentUserId = "";
+  let currentUserName = "";
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      currentUserId = payload.id;
+      currentUserName = payload.username;
+    } catch (error) {
+      console.error("Error decoding token", error);
+    }
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
+  };
+
   useEffect(() => {
     fetchBoards();
   }, []);
@@ -17,7 +36,7 @@ function DashboardPage() {
   const fetchBoards = async () => {
     try {
       const response = await axios.get("http://localhost:5000/api/boards", {
-        headers: { Authorization: localStorage.getItem("token") },
+        headers: { Authorization: `Bearer ${token}` },
       });
       setBoards(response.data);
     } catch (error) {
@@ -31,7 +50,7 @@ function DashboardPage() {
       await axios.post(
         "http://localhost:5000/api/boards",
         { name: newBoard },
-        { headers: { Authorization: localStorage.getItem("token") } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setNewBoard("");
       fetchBoards();
@@ -40,18 +59,22 @@ function DashboardPage() {
     }
   };
 
-  const startEditing = (board) => {
+  const startEditing = (board, e) => {
+    e.preventDefault();
+    e.stopPropagation();
     setEditingBoard(board.id);
     setUpdatedBoardName(board.name);
   };
 
-  const updateBoard = async (boardId) => {
+  const updateBoard = async (boardId, e) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!updatedBoardName.trim()) return;
     try {
       await axios.put(
         `http://localhost:5000/api/boards/${boardId}`,
         { name: updatedBoardName },
-        { headers: { Authorization: localStorage.getItem("token") } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setEditingBoard(null);
       fetchBoards();
@@ -60,10 +83,12 @@ function DashboardPage() {
     }
   };
 
-  const deleteBoard = async (boardId) => {
+  const deleteBoard = async (boardId, e) => {
+    e.preventDefault();
+    e.stopPropagation();
     try {
       await axios.delete(`http://localhost:5000/api/boards/${boardId}`, {
-        headers: { Authorization: localStorage.getItem("token") },
+        headers: { Authorization: `Bearer ${token}` },
       });
       fetchBoards();
     } catch (error) {
@@ -72,55 +97,86 @@ function DashboardPage() {
   };
 
   return (
-    <div className="container mt-4">
-      <h2>Dashboard</h2>
+    <div className="kanban-container dashboard-container">
+      {/* Account info area in the top right */}
+      <div className="account-info">
+        <span>Hey, {currentUserName}!</span>
+        <button onClick={handleLogout}>Log Out</button>
+      </div>
 
-      <div className="input-group mb-3">
+      <h1 className="kanban-title">Dashboard</h1>
+
+      <div className="add-task-container">
         <input
           type="text"
-          className="form-control"
           placeholder="New board name"
           value={newBoard}
           onChange={(e) => setNewBoard(e.target.value)}
         />
-        <button className="btn btn-primary" onClick={createBoard}>
-          Create Board
-        </button>
+        <button onClick={createBoard}>Create Board</button>
       </div>
 
-      <div className="list-group">
+      <div className="kanban-columns">
         {boards.map((board) => (
-          <div key={board.id} className="list-group-item d-flex justify-content-between align-items-center">
-            <Link to={`/board/${board.id}`} className="text-decoration-none">
-              <h5 className="mb-0">{board.name}</h5>
-            </Link>
-            <div>
-              {editingBoard === board.id ? (
-                <>
-                  <input
-                    type="text"
-                    value={updatedBoardName}
-                    onChange={(e) => setUpdatedBoardName(e.target.value)}
-                  />
-                  <button className="btn btn-success ms-2" onClick={() => updateBoard(board.id)}>
-                    Save
-                  </button>
-                  <button className="btn btn-secondary ms-2" onClick={() => setEditingBoard(null)}>
-                    Cancel
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button className="btn btn-warning ms-2" onClick={() => startEditing(board)}>
-                    Rename
-                  </button>
-                  <button className="btn btn-danger ms-2" onClick={() => deleteBoard(board.id)}>
-                    Delete
-                  </button>
-                </>
-              )}
+          <Link
+            key={board.id}
+            to={`/board/${board.id}`}
+            style={{ textDecoration: "none" }}
+          >
+            <div className="kanban-task">
+              <h5>{board.name}</h5>
+              <div>
+                {board.user_id === currentUserId ? (
+                  editingBoard === board.id ? (
+                    <>
+                      <input
+                        type="text"
+                        value={updatedBoardName}
+                        onChange={(e) => setUpdatedBoardName(e.target.value)}
+                        className="edit-input"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                      />
+                      <button
+                        className="edit-task"
+                        onClick={(e) => updateBoard(board.id, e)}
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setEditingBoard(null);
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        className="edit-task"
+                        onClick={(e) => startEditing(board, e)}
+                      >
+                        Rename
+                      </button>
+                      <button
+                        className="remove-access"
+                        onClick={(e) => deleteBoard(board.id, e)}
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )
+                ) : (
+                  <small>Shared by {board.owner_username}</small>
+                )}
+              </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

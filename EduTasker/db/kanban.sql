@@ -15,6 +15,16 @@ CREATE TABLE boards (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+CREATE TABLE board_shares (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  board_id INT NOT NULL,
+  shared_user_id INT NOT NULL,
+  FOREIGN KEY (board_id) REFERENCES boards(id),
+  FOREIGN KEY (shared_user_id) REFERENCES users(id),
+  UNIQUE KEY unique_board_share (board_id, shared_user_id)
+);
+
+
 CREATE TABLE tasks (
   id INT AUTO_INCREMENT PRIMARY KEY,
   title VARCHAR(255) NOT NULL,

@@ -3,42 +3,42 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
+  padding: 30px; /* Increased padding */
   background: rgba(255, 255, 255, 0.9);
   border-radius: 10px;
 }
 
 /* Title styling */
 .kanban-title {
-  font-size: 2rem;
+  font-size: 2.6rem; /* Increased font size */
   font-weight: bold;
   color: #333;
-  margin-bottom: 20px;
+  margin-bottom: 30px; /* Increased spacing */
 }
 
 /* Container for adding a task */
 .add-task-container {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 15px; /* Increased spacing between elements */
+  margin-bottom: 30px;
   width: 100%;
-  max-width: 600px;
+  max-width: 700px; /* Increased max width */
 }
 
 /* Input style for new task title */
 .add-task-container input {
   flex: 1;
-  padding: 10px;
-  font-size: 1rem;
+  padding: 15px; /* Increased padding */
+  font-size: 1.3rem; /* Increased font size */
   border: 1px solid #ccc;
   border-radius: 5px;
 }
 
 /* Button style for adding a new task */
 .add-task-container button {
-  padding: 10px 15px;
-  font-size: 1rem;
+  padding: 15px 20px; /* Increased padding */
+  font-size: 1.3rem; /* Increased font size */
   border: none;
   border-radius: 5px;
   background-color: #333;
@@ -51,21 +51,158 @@
   background-color: #555;
 }
 
+/* Share Board Panel */
+.share-board-panel {
+  width: 100%;
+  max-width: 700px; /* Increased max width */
+  background: #f7f7f7;
+  padding: 20px; /* Increased padding */
+  border-radius: 8px;
+  margin-top: 30px;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
+}
+
+.share-board-panel h2 {
+  margin-top: 0;
+  margin-bottom: 20px; /* Adjusted spacing */
+  color: #333;
+  font-size: 1.8rem; /* Increased font size */
+}
+
+/* Container for share buttons */
+.share-buttons {
+  display: flex;
+  gap: 15px; /* Adjusted spacing */
+  align-items: center;
+}
+
+/* Share User List */
+.share-user-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.share-user-item {
+  display: flex;
+  align-items: center;
+  font-size: 1.2rem;
+  justify-content: space-between;
+  padding: 12px 0; /* Increased padding */
+  border-bottom: 1px solid #ddd;
+}
+
+.share-user-item:last-child {
+  border-bottom: none;
+}
+
+/* Save Button Default Style */
+.save-button {
+  padding: 10px 15px;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  background-color: #333;
+  color: #fff;
+}
+
+/* Save Button Green Style when in Edit Mode */
+.save-button.save-button-edit-mode {
+  background-color: #28a745; /* Green background */
+  color: white;
+}
+
+.save-button.save-button-edit-mode:hover {
+  background-color: #218838; /* Darker green on hover */
+}
+
+/* Edit Button Style (already in place) */
+.edit-task {
+  background-color: #f1c40f;
+  color: #333;
+}
+
+.edit-task:hover {
+  background-color: #f39c12;
+}
+
+
+/* Button styles for share buttons */
+.share-user-item button {
+  padding: 10px 15px; /* Increased padding */
+  font-size: 1.2rem; /* Increased font size */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.share-user-item button:not(:disabled) {
+  background-color: #337ab7;
+  color: white;
+}
+.share-user-item button:not(:disabled):hover {
+  background-color: #286090;
+}
+
+/* Disabled button style */
+.share-user-item button:disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+}
+
+/* Remove Access button style */
+.share-user-item button.remove-access {
+  background-color: #d9534f;
+  color: white;
+}
+.share-user-item button.remove-access:hover {
+  background-color: #c9302c;
+}
+
+/* Edit (Rename) button style - yellow */
+.kanban-task button.edit-task {
+  background-color: #f1c40f;
+  font-size: 1.2rem;
+  color: #333;
+}
+.kanban-task button.edit-task:hover {
+  background-color: #f39c12;
+  font-size: 1.2rem;
+}
+
+/* When editing, center the text field */
+.kanban-task input.edit-input {
+  display: block;
+  margin: 0 auto;
+  text-align: center;
+  padding: 12px; /* Adjusted padding */
+  font-size: 1.2rem; /* Increased font size */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
 /* Container for all Kanban columns */
 .kanban-columns {
   display: flex;
-  gap: 20px;
+  gap: 30px; /* Increased gap between columns */
   width: 100%;
+  min-height: 130px;
+  max-height: 590px;
   justify-content: center;
 }
 
 /* Each individual Kanban column */
 .kanban-column {
   background: rgba(0, 0, 0, 0.7);
+  font-size: 1.2rem;
   color: white;
-  padding: 15px;
+  padding: 20px; /* Increased padding */
   border-radius: 8px;
-  min-width: 250px;
+  min-width: 325px; /* Adjusted minimum width */
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -76,33 +213,46 @@
 /* Header style inside each column */
 .kanban-column h2 {
   margin-top: 0;
-  margin-bottom: 10px;
+  margin-bottom: 15px; /* Adjusted spacing */
+  font-size: 1.6rem; /* Increased font size */
 }
 
 /* Individual task styling */
 .kanban-task {
   background: white;
+  text-align: center;
+  font-size: 1.2rem;
   color: black;
-  padding: 10px;
-  margin: 10px 0;
+  padding: 15px; /* Adjusted padding */
+  margin: 15px 0; /* Adjusted margin */
   border-radius: 5px;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
   cursor: grab;
   display: flex;
   flex-direction: column;
+  min-width: 300px;
+  
+  /* NEW: Limit the width of the task content */
+  max-width: 300px; /* Set the pixel width for the text container */
+  word-wrap: break-word; /* Break long words */
+  overflow-wrap: break-word; /* Ensure proper word wrapping */
+  white-space: normal; /* Allow wrapping naturally */
+  margin-left: auto; /* Center the task horizontally */
+  margin-right: auto; /* Center the task horizontally */
 }
+
 
 /* Delete button within each task */
 .kanban-task button {
-  margin-top: 5px;
+  margin-top: 8px; /* Adjusted margin */
   align-self: flex-end;
-  padding: 5px 10px;
+  padding: 8px 12px; /* Adjusted padding */
+  font-size: 1.2rem; /* Increased font size */
   background-color: #e74c3c;
   color: white;
   border: none;
   border-radius: 3px;
   cursor: pointer;
-  font-size: 0.8rem;
   transition: background 0.2s ease;
 }
 
@@ -110,13 +260,66 @@
   background-color: #c0392b;
 }
 
+/* Dashboard container is based on kanban-container; we add relative positioning */
+.dashboard-container {
+  position: relative;
+}
+
+/* Account info area in the top right */
+.account-info {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  text-align: right;
+  font-size: 1.2rem;
+}
+
+.account-info-kanban {
+  align-self: flex-end;
+  font-size: 1.2rem;
+}
+
+.account-info-kanban button {
+  padding: 8px 12px;
+  margin-left: 10px;
+  font-size: 1rem;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+
+.account-info span {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.account-info button {
+  padding: 8px 12px;
+  font-size: 1rem;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.account-info button:hover {
+  background-color: #c0392b;
+}
+
+
 /* Responsive: On smaller screens, stack columns vertically */
-@media (max-width: 768px) {
+@media (max-width: 1015px) {
   .kanban-columns {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .kanban-column {
     width: 90%;
     max-width: 600px;

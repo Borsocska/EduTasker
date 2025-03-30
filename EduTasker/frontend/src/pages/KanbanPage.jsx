@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import "./KanbanPage.css";
@@ -8,11 +8,46 @@ const KanbanPage = () => {
   const { boardId } = useParams();
   const [tasks, setTasks] = useState([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
+  // For sharing: a list of all users (except the current user)
+  const [users, setUsers] = useState([]);
+  // For sharing: an array of user IDs that already have a share for this board
+  const [sharedUsers, setSharedUsers] = useState([]);
+  // Board details (if needed for share controls)
+  const [boardInfo, setBoardInfo] = useState(null);
+  // States for task renaming
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editingTaskTitle, setEditingTaskTitle] = useState("");
+  const navigate = useNavigate();
 
+  // Retrieve token and always use the Bearer prefix
   const token = localStorage.getItem("token");
   const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
 
-  // Fetch tasks for the selected board
+  // Decode current user id from the token
+  let currentUserId = null;
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      currentUserId = payload.id;
+    } catch (error) {
+      console.error("Error decoding token", error);
+    }
+  }
+
+  // Fetch board details
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/api/boards", authHeaders)
+      .then((response) => {
+        const currentBoard = response.data.find(
+          (b) => Number(b.id) === Number(boardId)
+        );
+        setBoardInfo(currentBoard);
+      })
+      .catch((error) => console.error("Error fetching board info:", error));
+  }, [boardId]);
+
+  // Fetch tasks for the board
   useEffect(() => {
     axios
       .get(`http://localhost:5000/api/board/${boardId}/tasks`, authHeaders)
@@ -20,7 +55,97 @@ const KanbanPage = () => {
       .catch((error) => console.error("Error fetching tasks:", error));
   }, [boardId]);
 
-  // Update task position with new status and sort_order in the backend
+  // Fetch users (to share with)
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/api/users", authHeaders)
+      .then((response) => setUsers(response.data))
+      .catch((error) => console.error("Error fetching users:", error));
+  }, []);
+
+  // Fetch shared user IDs for the current board
+  useEffect(() => {
+    axios
+      .get(`http://localhost:5000/api/boards/${boardId}/shares`, authHeaders)
+      .then((response) => {
+        // Convert each shared_user_id to a number
+        const sharedIds = Array.isArray(response.data)
+          ? response.data.map((item) => Number(item))
+          : [];
+        setSharedUsers(sharedIds);
+      })
+      .catch((error) =>
+        console.error("Error fetching board shares:", error)
+      );
+  }, [boardId]);
+
+  // Function to share the board with a selected user
+  const shareBoard = async (sharedUserId) => {
+    if (sharedUsers.includes(Number(sharedUserId))) return;
+    try {
+      await axios.post(
+        `http://localhost:5000/api/boards/${boardId}/share`,
+        { sharedUserId },
+        authHeaders
+      );
+      setSharedUsers((prev) => [...prev, Number(sharedUserId)]);
+      console.log("Board shared with user id:", sharedUserId);
+    } catch (error) {
+      console.error("Error sharing board:", error);
+    }
+  };
+
+  // Function to remove share access for a user
+  const removeShare = async (sharedUserId) => {
+    try {
+      await axios.delete(
+        `http://localhost:5000/api/boards/${boardId}/share/${sharedUserId}`,
+        authHeaders
+      );
+      setSharedUsers((prev) =>
+        prev.filter((id) => Number(id) !== Number(sharedUserId))
+      );
+      console.log("Share removed for user id:", sharedUserId);
+    } catch (error) {
+      console.error("Error removing share:", error);
+    }
+  };
+
+  // Task editing functions
+  const handleEditTask = (task) => {
+    setEditingTaskId(task.id);
+    setEditingTaskTitle(task.title);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTaskId(null);
+    setEditingTaskTitle("");
+  };
+
+  const handleSaveTask = async (task) => {
+    try {
+      await axios.put(
+        `http://localhost:5000/api/tasks/${task.id}`,
+        {
+          title: editingTaskTitle,
+          status: task.status,
+          sort_order: task.sort_order,
+        },
+        authHeaders
+      );
+      setTasks((prevTasks) =>
+        prevTasks.map((t) => (t.id === task.id ? { ...t, title: editingTaskTitle } : t))
+      );
+      setEditingTaskId(null);
+      setEditingTaskTitle("");
+      console.log("Task title updated successfully");
+    } catch (error) {
+      console.error("Error updating task title:", error);
+    }
+  };
+
+  // ------------------------ Task drag and drop logic ------------------------
+
   const updateTaskPosition = async (taskId, newStatus, newSortOrder) => {
     try {
       await axios.put(
@@ -36,54 +161,34 @@ const KanbanPage = () => {
 
   const onDragEnd = (result) => {
     if (!result.destination) return;
-  
     const { source, destination, draggableId } = result;
     const draggedId = parseInt(draggableId);
-    
-    // Make a shallow copy of tasks for local manipulation
     let updatedTasks = [...tasks];
-    
-    // Find and remove the dragged task from the array
     const draggedIndex = updatedTasks.findIndex((task) => task.id === draggedId);
     if (draggedIndex === -1) return;
     const [draggedTask] = updatedTasks.splice(draggedIndex, 1);
-  
-    // If moving within the same column...
     if (source.droppableId === destination.droppableId) {
-      // Filter tasks from the same column (after removal)
       const sameColumnTasks = updatedTasks.filter(
         (task) => task.status === source.droppableId
       );
-  
-      // Insert the dragged task at its new index in the column
       sameColumnTasks.splice(destination.index, 0, draggedTask);
-  
-      // Reassign sort_order for tasks in this column
       const newSameColumnTasks = sameColumnTasks.map((task, index) => ({
         ...task,
         sort_order: index,
       }));
-  
-      // Replace tasks in updatedTasks belonging to that column
-      updatedTasks = updatedTasks
-        .filter((task) => task.status !== source.droppableId)
-        .concat(newSameColumnTasks);
+      updatedTasks = updatedTasks.filter(
+        (task) => task.status !== source.droppableId
+      );
+      updatedTasks = updatedTasks.concat(newSameColumnTasks);
     } else {
-      // Moving to a different column: update the dragged task’s status.
       draggedTask.status = destination.droppableId;
-  
-      // Get tasks for the source and destination columns
       const sourceColumnTasks = updatedTasks
         .filter((task) => task.status === source.droppableId)
         .sort((a, b) => a.sort_order - b.sort_order);
       const destColumnTasks = updatedTasks
         .filter((task) => task.status === destination.droppableId)
         .sort((a, b) => a.sort_order - b.sort_order);
-  
-      // Insert the dragged task into the destination column array
       destColumnTasks.splice(destination.index, 0, draggedTask);
-  
-      // Update sort_order for both columns
       const newSourceTasks = sourceColumnTasks.map((task, index) => ({
         ...task,
         sort_order: index,
@@ -92,8 +197,6 @@ const KanbanPage = () => {
         ...task,
         sort_order: index,
       }));
-  
-      // Remove all tasks from these two columns from updatedTasks, then add the updated ones back
       updatedTasks = updatedTasks.filter(
         (task) =>
           task.status !== source.droppableId &&
@@ -101,31 +204,25 @@ const KanbanPage = () => {
       );
       updatedTasks = updatedTasks.concat(newSourceTasks, newDestTasks);
     }
-    
-    // Immediately update the local state so the UI reflects the change.
     setTasks(updatedTasks);
-  
-    // Optionally update the backend for all tasks in the affected columns
     updatedTasks
       .filter(
         (task) =>
-          task.status === source.droppableId || task.status === destination.droppableId
+          task.status === source.droppableId ||
+          task.status === destination.droppableId
       )
       .forEach((task) => {
         updateTaskPosition(task.id, task.status, task.sort_order);
       });
   };
-  
 
   const addTask = async () => {
     if (!newTaskTitle) return;
-    
-    // Calculate new sort_order in "To-Do" column
     const tasksInTodo = tasks.filter((task) => task.status === "To-Do");
-    const newSortOrder = tasksInTodo.length 
-      ? Math.max(...tasksInTodo.map((task) => task.sort_order)) + 1 
-      : 0;
-
+    const newSortOrder =
+      tasksInTodo.length > 0
+        ? Math.max(...tasksInTodo.map((task) => task.sort_order)) + 1
+        : 0;
     try {
       const response = await axios.post(
         `http://localhost:5000/api/board/${boardId}/tasks`,
@@ -148,11 +245,38 @@ const KanbanPage = () => {
     }
   };
 
+  let currentUserName = "";
+  if (token) {
+    try {
+      // Decode the token and get the user id
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      currentUserName = payload.username;
+    } catch (error) {
+      console.error("Error decoding token", error);
+    }
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
+  };
+
   const columns = ["To-Do", "In Progress", "Complete"];
 
   return (
+
     <div className="kanban-container">
+
+      {/* Account info area in the top right */}
+      <div className="account-info-kanban">
+        <span>Hey, {currentUserName}!</span>
+        <button onClick={handleLogout}>Log Out</button>
+      </div>
+
       <h1 className="kanban-title">Kanban Board</h1>
+
+
+      {/* Add Task Panel */}
       <div className="add-task-container">
         <input
           type="text"
@@ -162,6 +286,8 @@ const KanbanPage = () => {
         />
         <button onClick={addTask}>Add Task</button>
       </div>
+
+      {/* Drag-and-Drop Task Columns */}
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="kanban-columns">
           {columns.map((col) => (
@@ -177,7 +303,11 @@ const KanbanPage = () => {
                     .filter((task) => task.status === col)
                     .sort((a, b) => a.sort_order - b.sort_order)
                     .map((task, index) => (
-                      <Draggable key={task.id} draggableId={task.id.toString()} index={index}>
+                      <Draggable
+                        key={task.id}
+                        draggableId={task.id.toString()}
+                        index={index}
+                      >
                         {(provided) => (
                           <div
                             className="kanban-task"
@@ -185,8 +315,32 @@ const KanbanPage = () => {
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
                           >
-                            {task.title}
-                            <button onClick={() => deleteTask(task.id)}>Delete</button>
+                            {editingTaskId === task.id ? (
+                              <>
+                                <input
+                                  type="text"
+                                  className="edit-input"
+                                  value={editingTaskTitle}
+                                  onChange={(e) => setEditingTaskTitle(e.target.value)}
+                                />
+                                <button
+                                  className={`save-button ${editingTaskId === task.id ? "save-button-edit-mode" : ""}`}
+                                  onClick={() => handleSaveTask(task)}
+                                >
+                                  Save
+                                </button>
+                                <button onClick={handleCancelEdit}>Cancel</button>
+                              </>
+                            ) : (
+                              <>
+                                <span>{task.title}</span>
+                                <button className="edit-task" onClick={() => handleEditTask(task)}>
+                                  Edit
+                                </button>
+                                <button onClick={() => deleteTask(task.id)}>Delete</button>
+                              </>
+                            )}
+
                           </div>
                         )}
                       </Draggable>
@@ -198,6 +352,34 @@ const KanbanPage = () => {
           ))}
         </div>
       </DragDropContext>
+
+      {/* Share Board Panel */}
+      <div className="share-board-panel">
+        <h2>Share Board</h2>
+        {boardInfo && Number(boardInfo.user_id) !== Number(currentUserId) ? (
+          <p>Only the author of this board can use the share feature</p>
+        ) : (
+          <ul className="share-user-list">
+            {users.map((user) => (
+              <li key={user.id} className="share-user-item">
+                <span>{user.username}</span>
+                {sharedUsers.includes(Number(user.id)) ? (
+                  <div className="share-buttons">
+                    <button disabled>Shared</button>
+                    <button className="remove-access" onClick={() => removeShare(user.id)}>
+                      Remove Access
+                    </button>
+                  </div>
+                ) : (
+                  <div className="share-buttons">
+                    <button onClick={() => shareBoard(user.id)}>Share</button>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 };
