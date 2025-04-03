@@ -1,3 +1,5 @@
+#VÁLTS A MASTER BRANCHRE, OTT VAN A KÉSZ ANYAG
+
 Telepítési és Indítási Lépések <br>
 Előfeltételek <br>
 Az oldal megjelenítéséhez, és a legfontosabb, a működéséhez el kell végeznünk pár alaplépést. El kell indítani a szervert, és magát az oldalt <br>
