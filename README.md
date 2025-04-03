@@ -1,4 +1,4 @@
-#VÁLTS A MASTER BRANCHRE, OTT VAN A KÉSZ ANYAG
+# VÁLTS A MASTER BRANCHRE, OTT VAN A KÉSZ ANYAG
 
 Telepítési és Indítási Lépések <br>
 Előfeltételek <br>
