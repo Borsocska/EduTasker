@@ -1,4 +1,6 @@
-# VÁLTS A MASTER BRANCHRE, OTT VAN A KÉSZ ANYAG
+# VÁLTS A MASTER BRANCHRE, OTT VAN A KÉSZ ANYAG.
+https://1drv.ms/w/c/1eeeeaae6246356d/ER5ui62NmAFIq1GCajYo97YBTkNqqAiUiG7eUe9MBzo_hg?e=hpsAjF
+## Ha a onedrive link nem működik, a master branchen is fel van töltve a dokumentáció.
 
 Telepítési és Indítási Lépések <br>
 Előfeltételek <br>
